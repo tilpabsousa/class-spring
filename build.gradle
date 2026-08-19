@@ -6,8 +6,8 @@ plugins {
     id 'org.jlleitschuh.gradle.ktlint' version '12.1.1'
 }
 
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+group = 'com.example' // grupo de pacotes do projeto
+version = '0.0.1-SNAPSHOT' // manual
 
 java {
     toolchain {
@@ -18,9 +18,10 @@ java {
 kotlin { jvmToolchain(21) }
 
 repositories {
-    mavenCentral()
+    mavenCentral() // fonte de pacotes (libs)
 }
 
+// usado em tempo de compilação para gerar código-fonte a partir de arquivos
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
@@ -30,3 +31,17 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.jar {
+    enabled = true
+}
+
+tasks.bootJar {
+    enabled = true
+}
+
+// dependencias x plugins
+// test (task)
+
+// estrutura do build, jvm, jar
+// próximo passo: criar módulos, 3 (core, api-build, async-build) no qual todos enxergam core.
