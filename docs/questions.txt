@@ -1,0 +1,4 @@
+Como a aplicação é construída e executada?
+No build.gradle, qual a diferença entre plugins e dependencies?
+Como funciona os módulos em um projeto Gradle/Spring Boot (Kotlin)? Para o quê eles servem? Resolve qual problema?
+O que é o gradle e como ele funciona com Spring Boot e Kotlin?
