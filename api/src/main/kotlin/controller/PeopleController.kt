@@ -1,4 +1,4 @@
-package com.example
+package com.example.controller
 
 import com.example.demo.core.Pessoa
 import org.springframework.web.bind.annotation.GetMapping

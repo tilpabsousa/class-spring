@@ -2,3 +2,6 @@ Como a aplicação é construída e executada?
 No build.gradle, qual a diferença entre plugins e dependencies?
 Como funciona os módulos em um projeto Gradle/Spring Boot (Kotlin)? Para o quê eles servem? Resolve qual problema?
 O que é o gradle e como ele funciona com Spring Boot e Kotlin?
+O que é o DSL?
+Qual a diferença entre build.gradle e build.gradle.kts? Quais as vantagens de usar Kotlin DSL?
+Quais diferenças entre as sintaxes e semântics entre build.gradle e build.gradle.kts? Qual a linguagem de cada uma?

@@ -183,3 +183,89 @@ Papel de cada peça:
 - **`io.spring.dependency-management`** — gerencia versões compatíveis entre si (BOM do Spring), evitando conflito de versões nas libs.
 
 Na prática: você roda `./gradlew bootRun` (ambiente de dev) ou `./gradlew build` (gera o `.jar` em `build/libs/`), e o Gradle orquestra compilação Kotlin → empacotamento Spring Boot → artefato final, sem você precisar chamar `kotlinc` ou montar o jar manualmente.
+
+<a id="o-que-e-dsl"></a>
+## O que é o DSL?
+
+**DSL**, ou *Domain-Specific Language*, é uma linguagem criada para resolver problemas de um domínio específico, em vez de ser uma linguagem de propósito geral. Diferente de uma linguagem como Java ou Kotlin puros (que servem para qualquer tipo de programa), uma DSL expõe apenas o vocabulário necessário para a tarefa que ela representa.
+
+```mermaid
+graph LR
+    L[Linguagem hospedeira: Groovy ou Kotlin] --> D[DSL do Gradle]
+    D --> B["plugins {}"]
+    D --> C["dependencies {}"]
+    D --> T["tasks {}"]
+```
+
+O Gradle não inventa uma linguagem nova do zero: ele constrói uma DSL **em cima** de uma linguagem hospedeira (*host language*) — Groovy, nos arquivos `build.gradle`, ou Kotlin, nos arquivos `build.gradle.kts`. Blocos como `plugins { }`, `dependencies { }` e `tasks { }` não são palavras-chave da linguagem em si; são funções e blocos especiais que o Gradle disponibiliza para descrever "o que construir" sem que você precise escrever código de propósito geral.
+
+Vantagem prática: a DSL guia o desenvolvedor. Em vez de escrever manualmente chamadas de API para registrar um plugin, você escreve algo declarativo:
+
+```kotlin
+plugins {
+    kotlin("jvm")
+    id("org.springframework.boot")
+}
+```
+
+Isso é mais legível e menos propenso a erro do que orquestrar manualmente cada etapa do build.
+
+<a id="build-gradle-vs-kts"></a>
+## Qual a diferença entre build.gradle e build.gradle.kts? Quais as vantagens de usar Kotlin DSL?
+
+Os dois arquivos descrevem exatamente a mesma coisa — plugins, dependências, tasks — mas usando **linguagens hospedeiras diferentes**:
+
+- **`build.gradle`** — escrito em **Groovy**, a DSL "clássica" do Gradle.
+- **`build.gradle.kts`** — escrito em **Kotlin**, usando a *Gradle Kotlin DSL*.
+
+Neste projeto, o módulo `core` usa `build.gradle` (Groovy), enquanto `api` e `async` usam `build.gradle.kts` (Kotlin) — os dois estilos convivem no mesmo build sem problema.
+
+**Vantagens do Kotlin DSL:**
+- **Verificação em tempo de compilação** — erros como `Unresolved reference: implementation` (que apareceu quando o módulo `async` ainda não tinha um plugin aplicado) são detectados antes mesmo de rodar o build, porque o script é compilado como código Kotlin de verdade.
+- **Autocomplete e navegação na IDE** — como o script é Kotlin tipado, a IDE sabe exatamente quais métodos e propriedades existem em cada bloco (`plugins`, `dependencies`, `kotlin { }`), oferecendo sugestões e "ir para definição".
+- **Refatoração segura** — renomear ou mover algo referenciado no build script é rastreado como qualquer outro código Kotlin.
+- **Consistência de linguagem** — times que já escrevem a aplicação em Kotlin não precisam alternar contexto para Groovy só para mexer no build.
+
+**Desvantagem/trade-off:** scripts Kotlin DSL são compilados, então a primeira execução (ou after `clean`) tende a ser um pouco mais lenta que a equivalente em Groovy, que é interpretado dinamicamente.
+
+<a id="sintaxe-groovy-vs-kotlin"></a>
+## Quais diferenças entre as sintaxes e semânticas entre build.gradle e build.gradle.kts? Qual a linguagem de cada uma?
+
+- **`build.gradle`** é escrito em **Groovy**, uma linguagem dinâmica para a JVM.
+- **`build.gradle.kts`** é escrito em **Kotlin**, uma linguagem estaticamente tipada para a JVM.
+
+Comparando a sintaxe lado a lado, usando os plugins deste próprio projeto:
+
+```groovy
+// core/build.gradle (Groovy)
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+}
+```
+
+```kotlin
+// api/build.gradle.kts (Kotlin)
+plugins {
+    kotlin("jvm")
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+}
+```
+
+Principais diferenças semânticas:
+
+| Aspecto | Groovy (`build.gradle`) | Kotlin (`build.gradle.kts`) |
+|---|---|---|
+| Tipagem | Dinâmica — erros de digitação só aparecem em tempo de execução do script | Estática — erros aparecem em tempo de compilação |
+| Aspas em IDs de plugin/dependência | Aspas simples opcionais em vários contextos: `id 'x'` | Aspas duplas e parênteses obrigatórios: `id("x")` |
+| Chamada de método sem parênteses | Permitida: `implementation 'lib'` | Não permitida: precisa de `implementation("lib")` |
+| Atalhos específicos do Gradle | — | `kotlin("jvm")` é um atalho de extensão só disponível na Kotlin DSL, equivalente a `id("org.jetbrains.kotlin.jvm")` |
+| Autocomplete/IDE | Limitado, baseado em convenção | Completo, baseado em tipos reais |
+
+Na prática, ambos compilam para o mesmo modelo de build do Gradle — a escolha da linguagem hospedeira não muda **o que** o build faz, apenas **como** ele é escrito e verificado.
