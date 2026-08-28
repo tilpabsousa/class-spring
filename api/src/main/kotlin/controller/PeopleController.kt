@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class PeopleController(val pessoaService: PessoaService) {
-
     @GetMapping("/insert")
     fun insert() {
         val p = Pessoa("João", 30)

@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class PessoaService(val repository: PessoaRepository) {
-
     fun insertPessoaService(p: Pessoa) {
         repository.insert(p)
     }
-
 }
