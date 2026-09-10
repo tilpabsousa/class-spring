@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ - class-spring</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="faq-nav" id="faq-nav">
+  <button class="faq-nav-toggle" id="faq-nav-toggle" aria-label="Abrir sumário">☰ Sumário</button>
+  <div class="faq-nav-links" id="faq-nav-links"></div>
+</nav>
+<main class="faq-content">
+<h1>FAQ</h1>
+<p>Perguntas e respostas sobre o projeto. Cada seção corresponde a um tópico listado em <a href="../questions.txt"><code>questions.txt</code></a> e linkado a partir do <a href="../../README.md"><code>README.md</code></a>.</p>
+<h2 id="build-e-execucao">Como a aplicação é construída e executada</h2>
+<p><img src="../image.png" alt="Diagrama de execução da aplicação"></p>
+<p>O diagrama apresenta dois momentos diferentes do ciclo de vida da aplicação: o <strong>build time</strong>, quando o código-fonte é transformado em um programa executável, e o <strong>runtime</strong>, quando esse programa está efetivamente rodando dentro de um container Docker.</p>
+<h3>1. Build time</h3>
+<p><strong>Build time</strong> é a etapa de construção da aplicação. Nesse momento, o programa ainda não está atendendo requisições de usuários.</p>
+<h4>Código-fonte</h4>
+<p>O código-fonte é o conjunto de arquivos escritos pelo desenvolvedor. Neste projeto, ele é escrito em <strong>Kotlin</strong> e utiliza o <strong>Spring Boot</strong> para criar a aplicação web.</p>
+<p>Arquivos como <code>Application.kt</code> e <code>HelloController.kt</code> descrevem o comportamento da aplicação, mas não são executados diretamente pelo sistema operacional.</p>
+<h4>JDK</h4>
+<p>O <strong>JDK</strong>, ou <em>Java Development Kit</em>, contém as ferramentas utilizadas no desenvolvimento de aplicações Java e Kotlin. Entre elas está o compilador responsável por transformar o código-fonte em <strong>bytecode</strong>, formato que pode ser entendido pela JVM.</p>
+<p>O JDK é necessário principalmente durante o desenvolvimento e o build. Ele não precisa, obrigatoriamente, estar presente na imagem final usada para executar a aplicação.</p>
+<h4>Gradle</h4>
+<p>O <strong>Gradle</strong> é a ferramenta de automação de build do projeto. As instruções do arquivo <code>build.gradle</code> dizem ao Gradle quais dependências baixar, quais plugins utilizar, como compilar o código e qual artefato produzir.</p>
+<p>Ao executar:</p>
+<pre><code class="language-bash">./gradlew clean build</code></pre>
+<p>o Gradle limpa resultados anteriores, compila o projeto, executa as verificações configuradas e gera o arquivo <code>jar</code>.</p>
+<h4>O arquivo <code>app.jar</code></h4>
+<p>O <code>jar</code>, abreviação de <em>Java Archive</em>, é o artefato executável produzido pelo build. Ele reúne o bytecode da aplicação, metadados e as dependências necessárias para iniciar o Spring Boot.</p>
+<p>Em uma aplicação Spring Boot, esse arquivo também inclui o servidor web embutido. Ele pode ser iniciado com um comando semelhante a:</p>
+<pre><code class="language-bash">java -jar app.jar</code></pre>
+<h3>2. Runtime no container</h3>
+<p><strong>Runtime</strong> é o momento em que o programa está em execução e pode receber requisições. No diagrama, essa execução acontece dentro de um <strong>container Docker</strong>.</p>
+<h4>Docker image</h4>
+<p>Uma <strong>Docker image</strong> é um pacote imutável usado como modelo para criar containers. Ela reúne o ambiente de execução e os arquivos da aplicação em camadas reproduzíveis.</p>
+<p>A imagem não é o processo em execução. Quando ela é iniciada, o Docker cria um <strong>container</strong>, que é a instância executável dessa imagem.</p>
+<h4>Base image</h4>
+<p>A <strong>base image</strong> é a camada inicial usada para construir a imagem da aplicação. Uma opção comum para projetos Java é <code>eclipse-temurin</code>, que fornece uma distribuição do Java adequada para executar o programa.</p>
+<p>Usar uma base image padronizada evita depender do Java instalado diretamente na máquina que hospedará a aplicação.</p>
+<h4>JRE e JVM</h4>
+<p>O <strong>JRE</strong>, ou <em>Java Runtime Environment</em>, representa o ambiente necessário para executar programas Java. Seu componente central é a <strong>JVM</strong>, ou <em>Java Virtual Machine</em>.</p>
+<p>A JVM lê e executa o bytecode contido no <code>jar</code>. Essa separação permite que o mesmo artefato seja executado em diferentes sistemas operacionais, desde que exista uma JVM compatível.</p>
+<p>Em termos simples:</p>
+<ul>
+<li>o <strong>JDK</strong> é usado para desenvolver e compilar;</li>
+<li>a <strong>JVM</strong> é responsável por executar;</li>
+<li>o ambiente de runtime fornece a JVM e as bibliotecas necessárias durante a execução.</li>
+</ul>
+<h4>Spring Boot</h4>
+<p>O <strong>Spring Boot</strong> simplifica a configuração e a inicialização de aplicações Spring. Quando a JVM executa o <code>app.jar</code>, o método <code>main</code> inicia o contexto da aplicação, configura os componentes e prepara o servidor web.</p>
+<p>Ele também procura classes como controllers e registra os endpoints definidos por anotações, por exemplo <code>@RestController</code> e <code>@GetMapping</code>.</p>
+<h4>Tomcat embutido</h4>
+<p>O <strong>Tomcat</strong> é o servidor web que recebe requisições HTTP e as encaminha para a aplicação. Neste projeto, ele é <strong>embutido</strong>: vem empacotado como dependência do <code>jar</code> e é iniciado automaticamente pelo Spring Boot.</p>
+<p>Por isso, não é necessário instalar ou configurar um Tomcat externo para executar o projeto.</p>
+<h4>Controllers e classes da aplicação</h4>
+<p>Os <strong>controllers</strong> definem os pontos de entrada HTTP da aplicação. Quando uma requisição chega ao Tomcat, o Spring identifica qual controller atende à rota solicitada e executa o método correspondente.</p>
+<p>As demais classes implementam regras de negócio, acesso a dados e outros comportamentos necessários ao sistema.</p>
+<h4>HTTP e porta 8080</h4>
+<p>O servidor embutido escuta uma porta de rede, normalmente a <strong>8080</strong>. O container deve publicar essa porta para permitir acesso a partir da máquina hospedeira ou de outros serviços.</p>
+<p>O fluxo de uma requisição é:</p>
+<ol>
+<li>o usuário envia uma requisição HTTP;</li>
+<li>a requisição chega à porta publicada pelo container;</li>
+<li>o Tomcat recebe a requisição;</li>
+<li>o Spring direciona a requisição ao controller correto;</li>
+<li>a aplicação processa a operação e devolve uma resposta HTTP.</li>
+</ol>
+<h3>Resumo do fluxo</h3>
+<p>O processo completo pode ser entendido assim:</p>
+<ol>
+<li>o desenvolvedor escreve o código-fonte em Kotlin;</li>
+<li>o JDK e o Gradle compilam e empacotam o projeto;</li>
+<li>o build produz um arquivo <code>jar</code> executável;</li>
+<li>o <code>jar</code> é copiado para uma Docker image com um runtime Java;</li>
+<li>um container é criado a partir dessa imagem;</li>
+<li>a JVM executa o <code>jar</code>;</li>
+<li>o Spring Boot inicia o Tomcat embutido e registra os endpoints;</li>
+<li>o usuário acessa a aplicação por HTTP na porta publicada.</li>
+</ol>
+<p>A separação entre build e runtime torna a entrega mais previsível: o mesmo artefato e o mesmo ambiente podem ser executados em diferentes máquinas sem depender de configurações locais específicas.</p>
+<h2 id="plugins-vs-dependencies">No build.gradle, qual a diferença entre plugins e dependencies?</h2>
+<p>São duas responsabilidades diferentes dentro do build:</p>
+<p><img src="../img/diag01-plugins-vs-dependencies.png" alt="Diagrama: plugins estendem o Gradle, dependencies adicionam bibliotecas ao classpath"></p>
+<ul>
+<li><strong><code>plugins {}</code></strong> — habilita <strong>capacidades</strong> no Gradle: novas tasks, convenções e DSLs. Ex: <code>org.jetbrains.kotlin.jvm</code> ensina o Gradle a compilar <code>.kt</code>; <code>org.springframework.boot</code> adiciona a task <code>bootJar</code> e o suporte a "fat jar".</li>
+<li><strong><code>dependencies {}</code></strong> — declara <strong>bibliotecas</strong> que seu código importa e usa em tempo de compilação/execução (ex: <code>spring-boot-starter-web</code>, <code>kotlin-reflect</code>).</li>
+</ul>
+<p>Regra prática: se a pergunta é "o Gradle sabe fazer X?" → é plugin. Se é "meu código precisa importar uma classe de uma lib?" → é dependency. Um plugin geralmente <strong>traz junto</strong> dependencies padrão (ex: o plugin do Spring Boot já resolve versões via BOM), mas são conceitos independentes — dá pra ter plugin sem dependency e vice-versa.</p>
+<h2 id="modulos-gradle">Como funciona os módulos em um projeto Gradle/Spring Boot (Kotlin)? Para o quê eles servem? Resolve qual problema?</h2>
+<p>Um módulo Gradle é um subprojeto com seu próprio <code>build.gradle</code> e <code>src/</code>, listado em <code>settings.gradle</code>. Cada módulo compila separadamente e pode depender de outros:</p>
+<p><img src="../img/diag02-modulos-gradle.png" alt="Diagrama: módulos api e async dependem do módulo core"></p>
+<pre><code>projeto-raiz/
+├── settings.gradle        # include &#x27;core&#x27;, &#x27;api&#x27;
+├── core/                   # regras de domínio, sem Spring
+│   └── build.gradle
+└── api/                    # controllers, Spring Boot
+    └── build.gradle        # implementation(project(&quot;:core&quot;))</code></pre>
+<p><strong>Problema que resolve:</strong></p>
+<ul>
+<li><strong>Isolamento de responsabilidade</strong> — <code>core</code> não conhece Spring/web; <code>api</code> não reimplementa domínio.</li>
+<li><strong>Build incremental</strong> — o Gradle só recompila o módulo que mudou (e quem depende dele), acelerando builds grandes.</li>
+<li><strong>Reuso</strong> — vários módulos "de entrada" (<code>api</code>, <code>async</code>, um worker, etc.) compartilham o mesmo <code>core</code> sem duplicar código.</li>
+<li><strong>Fronteiras explícitas</strong> — se <code>api</code> tentar acessar algo de <code>async</code>, e não houver <code>implementation project(':async')</code> declarado, o build falha. Isso evita acoplamento acidental.</li>
+</ul>
+<p>Sem módulos, tudo vive num <code>src/main</code> só: funciona para projetos pequenos, mas mistura domínio com infraestrutura (web, mensageria) conforme o projeto cresce.</p>
+<h2 id="o-que-e-gradle">O que é o gradle e como ele funciona com Spring Boot e Kotlin?</h2>
+<p><strong>Gradle</strong> é a ferramenta de build: lê os arquivos <code>build.gradle</code>/<code>build.gradle.kts</code>, resolve dependências (baixando do Maven Central, por exemplo), compila o código e empacota o artefato final.</p>
+<p><img src="../img/diag03-gradle-pipeline.png" alt="Diagrama: código-fonte .kt compilado pelo plugin Kotlin, empacotado pelo plugin Spring Boot em app.jar"></p>
+<p>Papel de cada peça:</p>
+<ul>
+<li><strong>Plugin Kotlin</strong> (<code>org.jetbrains.kotlin.jvm</code>) — ensina o Gradle a entender <code>.kt</code> e chamar o compilador Kotlin.</li>
+<li><strong>Plugin Spring</strong> (<code>org.jetbrains.kotlin.plugin.spring</code>) — ajusta o compilador Kotlin para abrir classes anotadas com <code>@Component</code>, <code>@Service</code>, etc. (Kotlin é <code>final</code> por padrão; Spring precisa criar proxies).</li>
+<li><strong>Plugin Spring Boot</strong> (<code>org.springframework.boot</code>) — adiciona a task <code>bootJar</code>, que empacota a aplicação + todas as dependências + servidor embutido num único <code>.jar</code> executável.</li>
+<li><strong><code>io.spring.dependency-management</code></strong> — gerencia versões compatíveis entre si (BOM do Spring), evitando conflito de versões nas libs.</li>
+</ul>
+<p>Na prática: você roda <code>./gradlew bootRun</code> (ambiente de dev) ou <code>./gradlew build</code> (gera o <code>.jar</code> em <code>build/libs/</code>), e o Gradle orquestra compilação Kotlin → empacotamento Spring Boot → artefato final, sem você precisar chamar <code>kotlinc</code> ou montar o jar manualmente.</p>
+<h2 id="o-que-e-dsl">O que é o DSL?</h2>
+<p><strong>DSL</strong>, ou <em>Domain-Specific Language</em>, é uma linguagem criada para resolver problemas de um domínio específico, em vez de ser uma linguagem de propósito geral. Diferente de uma linguagem como Java ou Kotlin puros (que servem para qualquer tipo de programa), uma DSL expõe apenas o vocabulário necessário para a tarefa que ela representa.</p>
+<p><img src="../img/diag04-dsl.png" alt="Diagrama: a linguagem hospedeira (Groovy/Kotlin) origina a DSL do Gradle, que expõe plugins, dependencies e tasks"></p>
+<p>O Gradle não inventa uma linguagem nova do zero: ele constrói uma DSL <strong>em cima</strong> de uma linguagem hospedeira (<em>host language</em>) — Groovy, nos arquivos <code>build.gradle</code>, ou Kotlin, nos arquivos <code>build.gradle.kts</code>. Blocos como <code>plugins { }</code>, <code>dependencies { }</code> e <code>tasks { }</code> não são palavras-chave da linguagem em si; são funções e blocos especiais que o Gradle disponibiliza para descrever "o que construir" sem que você precise escrever código de propósito geral.</p>
+<p>Vantagem prática: a DSL guia o desenvolvedor. Em vez de escrever manualmente chamadas de API para registrar um plugin, você escreve algo declarativo:</p>
+<pre><code class="language-kotlin">plugins {
+    kotlin(&quot;jvm&quot;)
+    id(&quot;org.springframework.boot&quot;)
+}</code></pre>
+<p>Isso é mais legível e menos propenso a erro do que orquestrar manualmente cada etapa do build.</p>
+<h2 id="build-gradle-vs-kts">Qual a diferença entre build.gradle e build.gradle.kts? Quais as vantagens de usar Kotlin DSL?</h2>
+<p>Os dois arquivos descrevem exatamente a mesma coisa — plugins, dependências, tasks — mas usando <strong>linguagens hospedeiras diferentes</strong>:</p>
+<ul>
+<li><strong><code>build.gradle</code></strong> — escrito em <strong>Groovy</strong>, a DSL "clássica" do Gradle.</li>
+<li><strong><code>build.gradle.kts</code></strong> — escrito em <strong>Kotlin</strong>, usando a <em>Gradle Kotlin DSL</em>.</li>
+</ul>
+<p>Neste projeto, o módulo <code>core</code> usa <code>build.gradle</code> (Groovy), enquanto <code>api</code> e <code>async</code> usam <code>build.gradle.kts</code> (Kotlin) — os dois estilos convivem no mesmo build sem problema.</p>
+<p><strong>Vantagens do Kotlin DSL:</strong></p>
+<ul>
+<li><strong>Verificação em tempo de compilação</strong> — erros como <code>Unresolved reference: implementation</code> (que apareceu quando o módulo <code>async</code> ainda não tinha um plugin aplicado) são detectados antes mesmo de rodar o build, porque o script é compilado como código Kotlin de verdade.</li>
+<li><strong>Autocomplete e navegação na IDE</strong> — como o script é Kotlin tipado, a IDE sabe exatamente quais métodos e propriedades existem em cada bloco (<code>plugins</code>, <code>dependencies</code>, <code>kotlin { }</code>), oferecendo sugestões e "ir para definição".</li>
+<li><strong>Refatoração segura</strong> — renomear ou mover algo referenciado no build script é rastreado como qualquer outro código Kotlin.</li>
+<li><strong>Consistência de linguagem</strong> — times que já escrevem a aplicação em Kotlin não precisam alternar contexto para Groovy só para mexer no build.</li>
+</ul>
+<p><strong>Desvantagem/trade-off:</strong> scripts Kotlin DSL são compilados, então a primeira execução (ou after <code>clean</code>) tende a ser um pouco mais lenta que a equivalente em Groovy, que é interpretado dinamicamente.</p>
+<h2 id="sintaxe-groovy-vs-kotlin">Quais diferenças entre as sintaxes e semânticas entre build.gradle e build.gradle.kts? Qual a linguagem de cada uma?</h2>
+<ul>
+<li><strong><code>build.gradle</code></strong> é escrito em <strong>Groovy</strong>, uma linguagem dinâmica para a JVM.</li>
+<li><strong><code>build.gradle.kts</code></strong> é escrito em <strong>Kotlin</strong>, uma linguagem estaticamente tipada para a JVM.</li>
+</ul>
+<p>Comparando a sintaxe lado a lado, usando os plugins deste próprio projeto:</p>
+<pre><code class="language-groovy">// core/build.gradle (Groovy)
+plugins {
+    id &#x27;org.jetbrains.kotlin.jvm&#x27;
+}
+
+dependencies {
+    implementation &#x27;org.springframework.boot:spring-boot-starter-web&#x27;
+}</code></pre>
+<pre><code class="language-kotlin">// api/build.gradle.kts (Kotlin)
+plugins {
+    kotlin(&quot;jvm&quot;)
+}
+
+dependencies {
+    implementation(&quot;org.springframework.boot:spring-boot-starter-web&quot;)
+}</code></pre>
+<p>Principais diferenças semânticas:</p>
+<table>
+ <thead>
+  <tr>
+   <th>Aspecto</th>
+   <th>Groovy (<code>build.gradle</code>)</th>
+   <th>Kotlin (<code>build.gradle.kts</code>)</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr>
+   <td>Tipagem</td>
+   <td>Dinâmica — erros de digitação só aparecem em tempo de execução do script</td>
+   <td>Estática — erros aparecem em tempo de compilação</td>
+  </tr>
+  <tr>
+   <td>Aspas em IDs de plugin/dependência</td>
+   <td>Aspas simples opcionais em vários contextos: <code>id 'x'</code></td>
+   <td>Aspas duplas e parênteses obrigatórios: <code>id("x")</code></td>
+  </tr>
+  <tr>
+   <td>Chamada de método sem parênteses</td>
+   <td>Permitida: <code>implementation 'lib'</code></td>
+   <td>Não permitida: precisa de <code>implementation("lib")</code></td>
+  </tr>
+  <tr>
+   <td>Atalhos específicos do Gradle</td>
+   <td>—</td>
+   <td><code>kotlin("jvm")</code> é um atalho de extensão só disponível na Kotlin DSL, equivalente a <code>id("org.jetbrains.kotlin.jvm")</code></td>
+  </tr>
+  <tr>
+   <td>Autocomplete/IDE</td>
+   <td>Limitado, baseado em convenção</td>
+   <td>Completo, baseado em tipos reais</td>
+  </tr>
+ </tbody>
+</table>
+<p>Na prática, ambos compilam para o mesmo modelo de build do Gradle — a escolha da linguagem hospedeira não muda <strong>o que</strong> o build faz, apenas <strong>como</strong> ele é escrito e verificado.</p>
+<h2 id="event-sourcing">Event Source: Teoria e Arquitetura de Software</h2>
+<blockquote>Nota: o termo correto é <strong>Event Sourcing</strong> (fonte de eventos), um padrão arquitetural.</blockquote>
+<p>Em uma aplicação "tradicional" (CRUD), o banco de dados guarda apenas o <strong>estado atual</strong> de uma entidade: quando um pedido muda de status, a linha antiga é sobrescrita e a informação de como se chegou ali se perde.</p>
+<p><strong>Event Sourcing</strong> inverte essa lógica: em vez de persistir o estado atual, persiste-se a <strong>sequência imutável de eventos</strong> que descreve tudo o que aconteceu. O estado atual deixa de ser a fonte de verdade e passa a ser apenas uma <strong>projeção derivada</strong> — recalculada a partir da soma (replay) dos eventos.</p>
+<p><img src="../img/diag05-event-sourcing.png" alt="Diagrama: sequência de eventos do pedido (criado, item adicionado, pago, enviado) sendo replayada para gerar o estado atual"></p>
+<p>Conceitos centrais:</p>
+<ul>
+<li><strong>Evento</strong> — um fato imutável que já aconteceu, sempre no passado (<code>PedidoCriado</code>, <code>PedidoPago</code>). Uma vez gravado, nunca é alterado ou apagado.</li>
+<li><strong>Event Store</strong> — o banco (ou log) onde os eventos são anexados em ordem (<em>append-only</em>). É a fonte de verdade do sistema.</li>
+<li><strong>Stream</strong> — a sequência de eventos pertencentes a uma mesma entidade/agregado (ex.: todos os eventos do <code>Pedido#123</code>).</li>
+<li><strong>Replay</strong> — processo de ler os eventos de um stream, do início, e aplicá-los um a um para reconstruir o estado atual.</li>
+<li><strong>Projeção (read model)</strong> — uma "view" otimizada para leitura, construída a partir dos eventos (ex.: uma tabela SQL com o estado atual, atualizada conforme os eventos chegam). Pode haver várias projeções diferentes para o mesmo stream de eventos.</li>
+<li><strong>Snapshot</strong> — uma foto do estado em um determinado ponto, usada para evitar reprocessar um stream muito longo do zero a cada leitura.</li>
+</ul>
+<p><strong>Problema que resolve:</strong></p>
+<ul>
+<li><strong>Auditoria completa</strong> — sabe-se exatamente o que aconteceu, quando e por quê, não apenas o estado final.</li>
+<li><strong>Debug e reconstrução histórica</strong> — é possível "voltar no tempo" e ver o estado da entidade em qualquer momento passado.</li>
+<li><strong>Novas projeções sem perda de dados</strong> — se uma nova necessidade de leitura surgir, basta reprocessar os eventos existentes para gerar uma nova projeção, sem precisar migrar dados destrutivamente.</li>
+<li><strong>Integração natural com sistemas assíncronos/distribuídos</strong> — os eventos já são o formato ideal para serem publicados em um message broker (como o Kafka) e consumidos por outros serviços.</li>
+</ul>
+<p><strong>Trade-offs:</strong> mais complexidade de implementação (é preciso lidar com versionamento de eventos, eventual consistency entre escrita e leitura, e crescimento do event store), então normalmente é usado apenas em domínios onde o histórico de mudanças tem valor de negócio real.</p>
+<h2 id="o-que-e-kafka">O que é o Kafka?</h2>
+<p><strong>Apache Kafka</strong> é uma plataforma distribuída de <strong>streaming de eventos</strong>: um sistema de mensageria que funciona como um log de eventos duráveis, ordenados e replicados, ao qual produtores escrevem e do qual consumidores leem — de forma desacoplada no tempo.</p>
+<p><img src="../img/diag06-kafka-overview.png" alt="Diagrama: produtores escrevendo em um tópico Kafka, consumidores lendo do mesmo tópico"></p>
+<p>Diferente de uma fila tradicional (onde a mensagem some após ser consumida), o Kafka <strong>retém</strong> as mensagens por um período configurável (ou indefinidamente), permitindo que vários consumidores independentes leiam o mesmo dado, cada um no seu próprio ritmo — o que combina muito bem com Event Sourcing: os eventos gravados no event store podem ser publicados no Kafka para alimentar outros serviços/projeções.</p>
+<p>Casos de uso típicos: comunicação assíncrona entre microsserviços, pipelines de dados em tempo real, agregação de logs, e como backbone de arquiteturas orientadas a eventos.</p>
+<h2 id="como-kafka-funciona">Como ele funciona? (Kafka em detalhes)</h2>
+<p><img src="../img/diag07-kafka-cluster-detalhado.png" alt="Diagrama: produtor publica no broker líder, que replica para brokers seguidores; consumer groups A e B leem de forma independente"></p>
+<h4>Broker</h4>
+<p>Um <strong>broker</strong> é um servidor Kafka responsável por armazenar dados e atender requisições de produtores e consumidores. Um <strong>cluster</strong> é formado por vários brokers trabalhando juntos, o que dá escalabilidade horizontal e tolerância a falhas.</p>
+<h4>Tópico (topic)</h4>
+<p>Um <strong>tópico</strong> é a categoria/nome lógico sob o qual as mensagens são publicadas — equivalente a uma "tabela" de eventos (ex.: <code>pedidos-eventos</code>). Produtores escrevem em um tópico; consumidores leem de um tópico.</p>
+<h4>Partição (partition)</h4>
+<p>Cada tópico é dividido em uma ou mais <strong>partições</strong>. Uma partição é um log <strong>ordenado e imutável</strong> de mensagens, onde cada mensagem recebe um identificador sequencial chamado <strong>offset</strong>.</p>
+<p><img src="../img/diag08-topico-particoes.png" alt="Diagrama: tópico pedidos-eventos dividido em partição 0 e partição 1, cada uma com uma sequência ordenada de offsets"></p>
+<ul>
+<li>Dividir um tópico em partições é o que permite <strong>paralelismo</strong>: cada partição pode ser lida/escrita de forma independente, e diferentes partições podem viver em brokers diferentes.</li>
+<li>A ordem das mensagens é garantida <strong>dentro de uma mesma partição</strong>, não entre partições diferentes do mesmo tópico.</li>
+<li>O produtor decide em qual partição uma mensagem vai (por padrão, com base em uma <strong>chave</strong> — mensagens com a mesma chave sempre vão para a mesma partição, preservando ordem para aquela chave. Ex.: usar o ID do pedido como chave garante que todos os eventos daquele pedido fiquem na mesma partição, em ordem).</li>
+</ul>
+<h4>Réplicas e Leader/Follower</h4>
+<p>Cada partição pode ter várias <strong>réplicas</strong> distribuídas entre brokers diferentes, para tolerância a falhas. Uma réplica é eleita <strong>leader</strong> (atende todas as leituras e escritas daquela partição) e as demais são <strong>followers</strong> (replicam passivamente os dados do leader). Se o broker do leader cair, um follower é promovido a novo leader automaticamente, sem perda de dados já confirmados.</p>
+<h4>Produtor (producer)</h4>
+<p>O <strong>produtor</strong> é a aplicação que publica mensagens em um tópico. Ele escolhe (ou deixa o Kafka escolher) a partição de destino e pode configurar o nível de confirmação (<code>acks</code>) exigido antes de considerar a escrita bem-sucedida (ex.: esperar que apenas o leader confirme, ou que todas as réplicas confirmem).</p>
+<h4>Consumidor e Consumer Group</h4>
+<p>O <strong>consumidor</strong> é a aplicação que lê mensagens de um tópico, avançando seu próprio <strong>offset</strong> de leitura (o Kafka não remove a mensagem após a leitura). Consumidores são organizados em <strong>consumer groups</strong>:</p>
+<ul>
+<li>Dentro de um mesmo <em>consumer group</em>, cada partição é lida por <strong>apenas um</strong> consumidor por vez — isso distribui a carga de leitura entre as instâncias do grupo.</li>
+<li>Grupos diferentes são <strong>independentes</strong>: cada grupo mantém seu próprio progresso (offset) e pode ler o tópico inteiro do seu próprio jeito, sem afetar outros grupos.</li>
+</ul>
+<p>Isso é o que permite, por exemplo, que um serviço de faturamento e um serviço de notificações leiam os mesmos eventos de pedido de forma totalmente desacoplada, cada um no seu ritmo.</p>
+<h4>Retenção</h4>
+<p>O Kafka retém mensagens por um tempo configurável (ex.: 7 dias) ou por tamanho, independentemente de terem sido consumidas ou não. Isso permite reprocessar o histórico (replay), característica que se encaixa diretamente no padrão de <strong>Event Sourcing</strong> descrito acima: o Kafka pode atuar como o próprio <em>event store</em>, ou como o canal de distribuição dos eventos gravados em um event store separado.</p>
+<h4>Resumo do fluxo de uma mensagem</h4>
+<ol>
+<li>o produtor envia uma mensagem para um tópico, com uma chave opcional;</li>
+<li>o Kafka calcula/usa a partição de destino com base na chave;</li>
+<li>a mensagem é anexada ao final do log daquela partição, no broker que é o leader;</li>
+<li>o leader replica a mensagem para os brokers followers da partição;</li>
+<li>após confirmação (conforme <code>acks</code>), a escrita é considerada concluída;</li>
+<li>cada consumer group lê a partição a partir do seu último offset registrado, de forma independente dos demais grupos;</li>
+<li>o consumidor processa a mensagem e, periodicamente, confirma (<em>commit</em>) o avanço do seu offset.</li>
+</ol>
+</main>
+<script src="../js/faq.js"></script>
+</body>
+</html>

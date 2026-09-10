@@ -4,7 +4,7 @@ Projeto de estudo em **Kotlin** com **Spring Boot**, organizado em módulos Grad
 
 ## Dúvidas e respostas
 
-- [Como a aplicação é construída e executada](docs/faq.md#build-e-execucao)
-- [No build.gradle, qual a diferença entre plugins e dependencies](docs/faq.md#plugins-vs-dependencies)
-- [Como funciona os módulos em um projeto Gradle/Spring Boot (Kotlin)](docs/faq.md#modulos-gradle)
-- [O que é o gradle e como ele funciona com Spring Boot e Kotlin](docs/faq.md#o-que-e-gradle)
+- [Como a aplicação é construída e executada](docs/html/faq.html#build-e-execucao)
+- [No build.gradle, qual a diferença entre plugins e dependencies](docs/html/faq.html#plugins-vs-dependencies)
+- [Como funciona os módulos em um projeto Gradle/Spring Boot (Kotlin)](docs/html/faq.html#modulos-gradle)
+- [O que é o gradle e como ele funciona com Spring Boot e Kotlin](docs/html/faq.html#o-que-e-gradle)

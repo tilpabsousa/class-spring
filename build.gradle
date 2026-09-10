@@ -33,7 +33,7 @@ subprojects {
     kotlin { jvmToolchain(21) }
 
     // desabilitado por padrão; módulos com @SpringBootApplication reativam em seu próprio build.gradle
-    bootJar { enabled = false }
+    bootJar { enabled = false } // TODO pesquisar sobre bootJar e jar no Spring Boot
     jar { enabled = true }
 
     // usado em tempo de compilação para gerar código-fonte a partir de arquivos

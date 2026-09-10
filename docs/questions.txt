@@ -5,3 +5,6 @@ O que é o gradle e como ele funciona com Spring Boot e Kotlin?
 O que é o DSL?
 Qual a diferença entre build.gradle e build.gradle.kts? Quais as vantagens de usar Kotlin DSL?
 Quais diferenças entre as sintaxes e semântics entre build.gradle e build.gradle.kts? Qual a linguagem de cada uma?
+Event Source: Teoria e Arquitetura de Software
+O que é o Kafka?
+Como ele funcionar? (use imagens, diagramas, etc) explique detalhadamente como funciona cada parte.
