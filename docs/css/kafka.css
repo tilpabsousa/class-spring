@@ -1,0 +1,466 @@
+/* ==========================================================================
+   Kafka em Movimento — explicação visual animada
+   Paleta derivada do tema escuro do FAQ (docs/css/style.css), estendida com
+   as cores de contexto usadas nos diagramas do projeto.
+   ========================================================================== */
+
+:root {
+  --bg: #0b0f16;
+  --surface: #111722;
+  --surface-2: #161d2a;
+  --surface-3: #1b2331;
+  --line: #273040;
+  --line-soft: #1e2734;
+
+  --text: #c9d1d9;
+  --dim: #8b949e;
+  --faint: #626d7d;
+
+  --blue: #58a6ff;     /* offsets, control plane, acento geral */
+  --green: #3fb950;    /* producers */
+  --amber: #d29922;    /* brokers, tópicos, partições */
+  --violet: #a371f7;   /* consumers, consumer groups */
+  --coral: #ff7b72;    /* ZooKeeper, lag, alerta */
+  --teal: #39c5cf;     /* réplicas, ISR */
+
+  --mono: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, monospace;
+  --max: 1000px;
+  --step: 9s;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding-inline: 20px;
+  padding-block: 48px 72px;
+}
+
+/* --------------------------------------------------------------- cabeçalho */
+
+.eyebrow {
+  margin: 0 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.eyebrow a { color: var(--dim); text-decoration: none; }
+.eyebrow a:hover { color: var(--blue); }
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 5.5vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+h1 .hl { color: var(--amber); }
+
+.lede {
+  margin: 16px 0 0;
+  max-width: 62ch;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------------ player */
+
+.player {
+  margin-top: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.player-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.counter {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.counter b { color: var(--blue); font-weight: 500; }
+
+.scene-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  flex: 1 1 260px;
+}
+
+/* legenda de cores */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface-2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+}
+
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+.legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.k-green  { background: var(--green); }
+.k-amber  { background: var(--amber); }
+.k-violet { background: var(--violet); }
+.k-blue   { background: var(--blue); }
+
+/* palco */
+.stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 920 / 420;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #131b28 0%, var(--bg) 70%);
+  overflow: hidden;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* barra de progresso do autoplay */
+.progress {
+  height: 2px;
+  background: var(--line-soft);
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+}
+
+.playing .progress span {
+  animation: fill var(--step) linear forwards;
+}
+
+@keyframes fill { from { width: 0; } to { width: 100%; } }
+
+/* narração */
+.caps {
+  padding: 20px 20px 4px;
+  min-height: 132px;
+}
+
+.cap { margin: 0; max-width: 72ch; color: var(--text); }
+.cap b { color: var(--amber); font-weight: 500; }
+.cap code {
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.88em;
+  color: var(--blue);
+}
+
+/* controles */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 20px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+button:hover { border-color: var(--blue); color: var(--blue); }
+button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+#play { min-width: 104px; color: var(--blue); border-color: #23406b; }
+
+.dots {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.dots button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.dots button[aria-current="true"] {
+  color: var(--bg);
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+/* ============================================================ SVG genérico */
+
+.scene text {
+  font-family: var(--mono);
+  fill: var(--text);
+}
+
+.t-lbl  { font-size: 13px; font-weight: 500; }
+.t-sm   { font-size: 11px; fill: var(--dim); }
+.t-xs   { font-size: 10px; fill: var(--faint); letter-spacing: 0.06em; }
+.t-tag  { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; }
+.t-num  { font-size: 13px; font-weight: 500; fill: var(--text); }
+
+.t-green  { fill: var(--green); }
+.t-amber  { fill: var(--amber); }
+.t-violet { fill: var(--violet); }
+.t-blue   { fill: var(--blue); }
+.t-coral  { fill: var(--coral); }
+.t-teal   { fill: var(--teal); }
+
+/* caixas */
+.box       { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.5; }
+.box-green { fill: rgba(63, 185, 80, 0.07);  stroke: var(--green); }
+.box-amber { fill: rgba(210, 153, 34, 0.05); stroke: rgba(210, 153, 34, 0.55); }
+.box-violet{ fill: rgba(163, 113, 247, 0.07);stroke: var(--violet); }
+.box-coral { fill: rgba(255, 123, 114, 0.05);stroke: rgba(255, 123, 114, 0.45); }
+.box-blue  { fill: rgba(88, 166, 255, 0.07); stroke: var(--blue); }
+.box-ghost { fill: none; stroke: var(--line); stroke-dasharray: 5 5; }
+
+/* trilha de partição */
+.lane { fill: rgba(210, 153, 34, 0.05); stroke: rgba(210, 153, 34, 0.35); stroke-width: 1.2; }
+
+/* registro */
+.rec rect { fill: var(--surface-3); stroke: rgba(210, 153, 34, 0.6); stroke-width: 1.2; }
+.rec text { font-size: 12px; fill: var(--amber); font-variant-numeric: tabular-nums; }
+.rec.read rect { fill: rgba(163, 113, 247, 0.16); stroke: rgba(163, 113, 247, 0.65); }
+.rec.read text { fill: var(--violet); }
+.rec.old  rect { fill: none; stroke: var(--line); stroke-dasharray: 4 4; }
+.rec.old  text { fill: var(--faint); }
+
+/* linhas */
+.wire        { stroke: var(--line); stroke-width: 1.4; fill: none; }
+.wire-violet { stroke: var(--violet); stroke-width: 1.4; fill: none; opacity: 0.85; }
+.wire-teal   { stroke: var(--teal); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; opacity: 0.85; }
+.wire-green  { stroke: var(--green); stroke-width: 1.4; fill: none; }
+.wire-blue   { stroke: var(--blue); stroke-width: 1.4; fill: none; stroke-dasharray: 6 4; }
+.wire-dim    { stroke: var(--line); stroke-width: 1.2; fill: none; stroke-dasharray: 4 4; }
+
+/* ======================================================== animações do SVG */
+
+.drop        { animation: drop 3.2s ease-in-out infinite; }
+.pkt         { animation: none; }
+.pulse       { animation: pulse 2.4s ease-in-out infinite; }
+.slide       { animation: slide 4s ease-in-out infinite; }
+.blink       { animation: blink 2s ease-in-out infinite; }
+.flow        { stroke-dasharray: 6 6; animation: flow 1.6s linear infinite; }
+
+@keyframes drop {
+  0%       { opacity: 0; transform: translateY(-96px); }
+  22%, 88% { opacity: 1; transform: translateY(0); }
+  100%     { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+@keyframes flow { to { stroke-dashoffset: -24; } }
+
+@keyframes slide {
+  0%       { transform: translateX(-132px); opacity: 0.5; }
+  45%,100% { transform: translateX(0); opacity: 1; }
+}
+
+/* pacotes producer -> partição (deltas definidos inline por cena) */
+.pkt-a { animation: pktA 2.6s ease-in infinite; }
+.pkt-b { animation: pktB 2.6s ease-in infinite 0.45s; }
+.pkt-c { animation: pktC 2.6s ease-in infinite 0.9s; }
+
+@keyframes pktA {
+  0%        { opacity: 0; transform: translate(0, 0); }
+  12%       { opacity: 1; }
+  78%, 100% { opacity: 0; transform: translate(154px, -79px); }
+}
+@keyframes pktB {
+  0%        { opacity: 0; transform: translate(0, 0); }
+  12%       { opacity: 1; }
+  78%, 100% { opacity: 0; transform: translate(154px, 1px); }
+}
+@keyframes pktC {
+  0%        { opacity: 0; transform: translate(0, 0); }
+  12%       { opacity: 1; }
+  78%, 100% { opacity: 0; transform: translate(154px, 81px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop, .pulse, .slide, .blink, .flow,
+  .pkt-a, .pkt-b, .pkt-c,
+  .playing .progress span { animation: none; }
+  .drop { opacity: 1; }
+}
+
+/* =================================================================== texto */
+
+section.prose { margin-top: 64px; }
+
+h2 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+.sub {
+  margin: 0 0 24px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.term {
+  margin: 0;
+  background: var(--surface);
+  padding: 18px 20px;
+}
+
+.term dt {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--amber);
+  margin-bottom: 6px;
+}
+
+.term dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--dim);
+}
+
+.term dd code { color: var(--blue); }
+
+/* garantias */
+.rules { list-style: none; margin: 0; padding: 0; }
+
+.rules li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 14px;
+  color: var(--dim);
+}
+
+.rules li:first-child { border-top: 0; }
+.rules li b { color: var(--text); font-weight: 500; }
+.rules .ok  { color: var(--green); }
+.rules .no  { color: var(--coral); }
+
+/* cli */
+pre {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.9;
+  color: var(--text);
+}
+
+pre .c { color: var(--faint); }
+pre .p { color: var(--green); }
+
+footer {
+  margin-top: 64px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 12px;
+  color: var(--faint);
+}
+
+footer a { color: var(--dim); }
+footer a:hover { color: var(--blue); }
+
+@media (max-width: 620px) {
+  .caps { min-height: 178px; }
+  .dots { margin-left: 0; width: 100%; }
+  .legend { font-size: 10px; }
+}
+
+/* chips de réplica (cena do cluster) */
+.chip-l { fill: rgba(57, 197, 207, 0.12); stroke: var(--teal); stroke-width: 1.3; }
+.chip-f { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; }
