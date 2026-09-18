@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kafka em Movimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap">
+<link rel="stylesheet" href="../css/kafka.css">
+</head>
+<body>
+
+<!-- pontas de seta compartilhadas por todas as cenas -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="a-dim"    viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#5c6773"/></marker>
+  <marker id="a-green"  viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#3fb950"/></marker>
+  <marker id="a-blue"   viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#58a6ff"/></marker>
+  <marker id="a-violet" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#a371f7"/></marker>
+  <marker id="a-teal"   viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#39c5cf"/></marker>
+</defs></svg>
+
+<div class="wrap">
+
+<p class="eyebrow"><a href="faq.html">FAQ</a> &nbsp;/&nbsp; class-spring &nbsp;/&nbsp; apache kafka</p>
+<h1>Kafka em <span class="hl">Movimento</span></h1>
+<p class="lede">Sete cenas animadas, do registro isolado ao cluster inteiro: tópicos, partições, offsets, producers, consumer groups, rebalanceamento e o plano de controle — ZooKeeper e o KRaft que o substituiu.</p>
+
+<section class="player" id="player">
+
+  <div class="player-head">
+    <span class="counter">CENA <b id="sc-now">1</b> DE 7</span>
+    <h2 class="scene-title" id="sc-title">O tópico é um log</h2>
+  </div>
+
+  <div class="legend" aria-hidden="true">
+    <span><i class="k-green"></i>producer</span>
+    <span><i class="k-amber"></i>tópico · partição · broker</span>
+    <span><i class="k-violet"></i>consumer · group</span>
+    <span><i class="k-blue"></i>offset · plano de controle</span>
+  </div>
+
+  <div class="stage">
+
+    <!-- ============================================ 1. o tópico é um log -->
+    <svg class="scene" data-title="O tópico é um log" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img"
+         aria-label="Uma partição desenhada como uma fila de registros numerados de 0 a 7, com um novo registro caindo do producer na ponta direita.">
+      <rect class="box box-green" x="647" y="52" width="200" height="54" rx="10"/>
+      <text class="t-lbl t-green" x="747" y="84" text-anchor="middle">producer.send()</text>
+      <path class="wire-green flow" d="M747 106 L747 178" marker-end="url(#a-green)"/>
+
+      <text class="t-sm t-amber" x="140" y="146">topic: pedidos &middot; partition 0</text>
+      <rect class="lane" x="140" y="160" width="700" height="96" rx="14"/>
+
+      <g class="rec old"><rect x="156" y="186" width="62" height="44" rx="7"/><text x="187" y="214" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="226" y="186" width="62" height="44" rx="7"/><text x="257" y="214" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="296" y="186" width="62" height="44" rx="7"/><text x="327" y="214" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="366" y="186" width="62" height="44" rx="7"/><text x="397" y="214" text-anchor="middle">3</text></g>
+      <g class="rec"><rect x="436" y="186" width="62" height="44" rx="7"/><text x="467" y="214" text-anchor="middle">4</text></g>
+      <g class="rec"><rect x="506" y="186" width="62" height="44" rx="7"/><text x="537" y="214" text-anchor="middle">5</text></g>
+      <g class="rec"><rect x="576" y="186" width="62" height="44" rx="7"/><text x="607" y="214" text-anchor="middle">6</text></g>
+      <g class="rec"><rect x="646" y="186" width="62" height="44" rx="7"/><text x="677" y="214" text-anchor="middle">7</text></g>
+      <g class="rec drop"><rect x="716" y="186" width="62" height="44" rx="7"/><text x="747" y="214" text-anchor="middle">8</text></g>
+
+      <text class="t-xs" x="156" y="282">MAIS ANTIGO &middot; EXPIRANDO</text>
+      <text class="t-xs" x="778" y="282" text-anchor="end">TAIL &middot; APPEND-ONLY</text>
+      <text class="t-sm" x="140" y="322">o offset é um inteiro sequencial, imutável e único dentro da partição</text>
+      <text class="t-xs" x="140" y="350">ninguém edita nem apaga um registro: o log só cresce à direita e expira à esquerda</text>
+      <text class="t-xs" x="140" y="374">retention.ms = 604800000 &middot; retention.bytes</text>
+    </svg>
+
+    <!-- ============================================ 2. partições e chave -->
+    <svg class="scene" data-title="Partições: a chave decide o destino" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Um registro com chave passa por uma função de hash que escolhe a partição 1 entre três partições do tópico.">
+      <rect class="box box-green" x="40" y="110" width="210" height="68" rx="12"/>
+      <text class="t-lbl t-green" x="60" y="140">key = "cli-42"</text>
+      <text class="t-xs" x="60" y="162">value = { total: 199.9 }</text>
+
+      <path class="wire" d="M145 178 L145 206" marker-end="url(#a-dim)"/>
+
+      <rect class="box box-blue" x="40" y="212" width="210" height="68" rx="12"/>
+      <text class="t-lbl t-blue" x="60" y="242">murmur2(key)</text>
+      <text class="t-xs" x="60" y="264">% 3 &nbsp;&rarr;&nbsp; partição 1</text>
+
+      <path class="wire-blue flow" d="M250 246 L320 219" marker-end="url(#a-blue)"/>
+
+      <rect class="box box-amber" x="300" y="60" width="580" height="310" rx="16"/>
+      <text class="t-lbl t-amber" x="318" y="86">topic: pedidos</text>
+
+      <rect class="lane" x="330" y="104" width="530" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="346" y="139">P0</text>
+      <g class="rec"><rect x="388" y="116" width="54" height="38" rx="6"/><text x="415" y="140" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="450" y="116" width="54" height="38" rx="6"/><text x="477" y="140" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="512" y="116" width="54" height="38" rx="6"/><text x="539" y="140" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="574" y="116" width="54" height="38" rx="6"/><text x="601" y="140" text-anchor="middle">3</text></g>
+      <g class="rec"><rect x="636" y="116" width="54" height="38" rx="6"/><text x="663" y="140" text-anchor="middle">4</text></g>
+      <g class="rec"><rect x="698" y="116" width="54" height="38" rx="6"/><text x="725" y="140" text-anchor="middle">5</text></g>
+
+      <rect class="lane" x="330" y="186" width="530" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="346" y="221">P1</text>
+      <g class="rec"><rect x="388" y="198" width="54" height="38" rx="6"/><text x="415" y="222" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="450" y="198" width="54" height="38" rx="6"/><text x="477" y="222" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="512" y="198" width="54" height="38" rx="6"/><text x="539" y="222" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="574" y="198" width="54" height="38" rx="6"/><text x="601" y="222" text-anchor="middle">3</text></g>
+      <g class="rec"><rect x="636" y="198" width="54" height="38" rx="6"/><text x="663" y="222" text-anchor="middle">4</text></g>
+      <g class="rec drop"><rect x="698" y="198" width="54" height="38" rx="6"/><text x="725" y="222" text-anchor="middle">5</text></g>
+
+      <rect class="lane" x="330" y="268" width="530" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="346" y="303">P2</text>
+      <g class="rec"><rect x="388" y="280" width="54" height="38" rx="6"/><text x="415" y="304" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="450" y="280" width="54" height="38" rx="6"/><text x="477" y="304" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="512" y="280" width="54" height="38" rx="6"/><text x="539" y="304" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="574" y="280" width="54" height="38" rx="6"/><text x="601" y="304" text-anchor="middle">3</text></g>
+
+      <text class="t-xs" x="300" y="396">cada partição tem sua própria numeração de offsets — o offset 3 de P0 nada tem a ver com o offset 3 de P2</text>
+    </svg>
+
+    <!-- ============================================ 3. producer -->
+    <svg class="scene" data-title="Producer: lote, acks e o líder da partição" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Um producer envia registros em lote para as três partições de um tópico, com acks igual a all.">
+      <rect class="box box-green" x="40" y="140" width="228" height="140" rx="14"/>
+      <text class="t-lbl t-green" x="62" y="172">producer</text>
+      <text class="t-xs" x="62" y="200">acks = all</text>
+      <text class="t-xs" x="62" y="222">linger.ms = 5</text>
+      <text class="t-xs" x="62" y="244">batch.size = 16384</text>
+      <text class="t-xs" x="62" y="266">partitioner = sticky</text>
+
+      <path class="wire-green" d="M270 190 L418 114" marker-end="url(#a-green)"/>
+      <path class="wire-green" d="M270 210 L418 211" marker-end="url(#a-green)"/>
+      <path class="wire-green" d="M270 230 L418 308" marker-end="url(#a-green)"/>
+
+      <rect class="pkt-a" x="266" y="182" width="16" height="16" rx="3" fill="#3fb950"/>
+      <rect class="pkt-b" x="266" y="202" width="16" height="16" rx="3" fill="#3fb950"/>
+      <rect class="pkt-c" x="266" y="222" width="16" height="16" rx="3" fill="#3fb950"/>
+
+      <rect class="box box-amber" x="400" y="40" width="480" height="336" rx="16"/>
+      <text class="t-lbl t-amber" x="418" y="66">topic: pedidos</text>
+
+      <rect class="lane" x="424" y="80" width="436" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="440" y="107">P0</text>
+      <text class="t-xs" x="440" y="124">broker 1</text>
+      <g class="rec"><rect x="472" y="92" width="50" height="38" rx="6"/><text x="497" y="116" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="530" y="92" width="50" height="38" rx="6"/><text x="555" y="116" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="588" y="92" width="50" height="38" rx="6"/><text x="613" y="116" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="646" y="92" width="50" height="38" rx="6"/><text x="671" y="116" text-anchor="middle">3</text></g>
+      <g class="rec"><rect x="704" y="92" width="50" height="38" rx="6"/><text x="729" y="116" text-anchor="middle">4</text></g>
+
+      <rect class="lane" x="424" y="180" width="436" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="440" y="207">P1</text>
+      <text class="t-xs" x="440" y="224">broker 2</text>
+      <g class="rec"><rect x="472" y="192" width="50" height="38" rx="6"/><text x="497" y="216" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="530" y="192" width="50" height="38" rx="6"/><text x="555" y="216" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="588" y="192" width="50" height="38" rx="6"/><text x="613" y="216" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="646" y="192" width="50" height="38" rx="6"/><text x="671" y="216" text-anchor="middle">3</text></g>
+      <g class="rec"><rect x="704" y="192" width="50" height="38" rx="6"/><text x="729" y="216" text-anchor="middle">4</text></g>
+
+      <rect class="lane" x="424" y="280" width="436" height="62" rx="10"/>
+      <text class="t-sm t-amber" x="440" y="307">P2</text>
+      <text class="t-xs" x="440" y="324">broker 3</text>
+      <g class="rec"><rect x="472" y="292" width="50" height="38" rx="6"/><text x="497" y="316" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="530" y="292" width="50" height="38" rx="6"/><text x="555" y="316" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="588" y="292" width="50" height="38" rx="6"/><text x="613" y="316" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="646" y="292" width="50" height="38" rx="6"/><text x="671" y="316" text-anchor="middle">3</text></g>
+
+      <text class="t-xs" x="40" y="320">com chave &rarr; sempre a mesma partição</text>
+      <text class="t-xs" x="40" y="342">sem chave &rarr; round-robin por lote</text>
+      <text class="t-xs" x="400" y="400">o producer escreve direto no broker que é líder daquela partição — nunca em um intermediário</text>
+    </svg>
+
+    <!-- ============================================ 4. offset e lag -->
+    <svg class="scene" data-title="Offset consumido, offset commitado e lag" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Uma partição com dez registros: os cinco primeiros já lidos, um marcador no offset commitado 5 e um lag de cinco registros até o fim do log.">
+      <text class="t-sm t-amber" x="120" y="104">partition: pedidos-0</text>
+      <rect class="lane" x="120" y="118" width="720" height="88" rx="14"/>
+
+      <g class="rec read"><rect x="136" y="140" width="58" height="44" rx="7"/><text x="165" y="168" text-anchor="middle">0</text></g>
+      <g class="rec read"><rect x="202" y="140" width="58" height="44" rx="7"/><text x="231" y="168" text-anchor="middle">1</text></g>
+      <g class="rec read"><rect x="268" y="140" width="58" height="44" rx="7"/><text x="297" y="168" text-anchor="middle">2</text></g>
+      <g class="rec read"><rect x="334" y="140" width="58" height="44" rx="7"/><text x="363" y="168" text-anchor="middle">3</text></g>
+      <g class="rec read"><rect x="400" y="140" width="58" height="44" rx="7"/><text x="429" y="168" text-anchor="middle">4</text></g>
+      <g class="rec"><rect x="466" y="140" width="58" height="44" rx="7"/><text x="495" y="168" text-anchor="middle">5</text></g>
+      <g class="rec"><rect x="532" y="140" width="58" height="44" rx="7"/><text x="561" y="168" text-anchor="middle">6</text></g>
+      <g class="rec"><rect x="598" y="140" width="58" height="44" rx="7"/><text x="627" y="168" text-anchor="middle">7</text></g>
+      <g class="rec"><rect x="664" y="140" width="58" height="44" rx="7"/><text x="693" y="168" text-anchor="middle">8</text></g>
+      <g class="rec"><rect x="730" y="140" width="58" height="44" rx="7"/><text x="759" y="168" text-anchor="middle">9</text></g>
+
+      <g class="slide">
+        <path d="M495 214 l-8 14 h16 z" fill="#58a6ff"/>
+        <path class="wire-blue" d="M495 206 L495 216"/>
+        <text class="t-sm t-blue" x="495" y="250" text-anchor="middle">committed offset = 5</text>
+      </g>
+
+      <path class="wire-blue" d="M794 112 L794 228"/>
+      <text class="t-sm t-blue" x="820" y="250" text-anchor="end">log end offset = 10</text>
+
+      <path d="M495 268 v12 H794 v-12" fill="none" stroke="#ff7b72" stroke-width="1.4"/>
+      <text class="t-sm t-coral" x="644" y="300" text-anchor="middle">lag = 5 registros</text>
+
+      <rect class="box box-violet" x="120" y="316" width="230" height="72" rx="12"/>
+      <text class="t-lbl t-violet" x="235" y="348" text-anchor="middle">consumer</text>
+      <text class="t-xs" x="235" y="370" text-anchor="middle">poll() &rarr; processa &rarr; commit</text>
+
+      <path class="wire-violet" d="M350 340 C 420 330, 450 300, 488 262" marker-end="url(#a-violet)"/>
+
+      <text class="t-sm" x="400" y="350">o commit grava o offset no tópico interno __consumer_offsets</text>
+      <text class="t-xs" x="400" y="374">reposicionar o offset para trás = reprocessar o histórico (replay)</text>
+      <text class="t-xs" x="400" y="398">enable.auto.commit &middot; auto.offset.reset = earliest | latest</text>
+    </svg>
+
+    <!-- ============================================ 5. consumer groups -->
+    <svg class="scene" data-title="Consumer groups: dividir sem duplicar" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Três partições distribuídas entre dois consumers do grupo faturamento, enquanto o grupo analytics lê as mesmas três partições em um único consumer.">
+      <rect class="box box-amber" x="40" y="70" width="380" height="290" rx="14"/>
+      <text class="t-lbl t-amber" x="58" y="96">topic: pedidos</text>
+
+      <rect class="lane" x="64" y="112" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="145">P0</text>
+      <g class="rec"><rect x="116" y="124" width="40" height="32" rx="5"/><text x="136" y="145" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="124" width="40" height="32" rx="5"/><text x="182" y="145" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="124" width="40" height="32" rx="5"/><text x="228" y="145" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="124" width="40" height="32" rx="5"/><text x="274" y="145" text-anchor="middle">3</text></g>
+
+      <rect class="lane" x="64" y="192" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="225">P1</text>
+      <g class="rec"><rect x="116" y="204" width="40" height="32" rx="5"/><text x="136" y="225" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="204" width="40" height="32" rx="5"/><text x="182" y="225" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="204" width="40" height="32" rx="5"/><text x="228" y="225" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="204" width="40" height="32" rx="5"/><text x="274" y="225" text-anchor="middle">3</text></g>
+
+      <rect class="lane" x="64" y="272" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="305">P2</text>
+      <g class="rec"><rect x="116" y="284" width="40" height="32" rx="5"/><text x="136" y="305" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="284" width="40" height="32" rx="5"/><text x="182" y="305" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="284" width="40" height="32" rx="5"/><text x="228" y="305" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="284" width="40" height="32" rx="5"/><text x="274" y="305" text-anchor="middle">3</text></g>
+
+      <path class="wire-violet" d="M396 140 L518 118" marker-end="url(#a-violet)"/>
+      <path class="wire-violet" d="M396 220 L518 134" marker-end="url(#a-violet)"/>
+      <path class="wire-violet" d="M396 300 L518 190" marker-end="url(#a-violet)"/>
+
+      <path class="wire-teal" d="M396 140 L518 300" marker-end="url(#a-teal)"/>
+      <path class="wire-teal" d="M396 220 L518 310" marker-end="url(#a-teal)"/>
+      <path class="wire-teal" d="M396 300 L518 320" marker-end="url(#a-teal)"/>
+
+      <rect class="box box-violet" x="500" y="60" width="380" height="170" rx="14"/>
+      <text class="t-lbl t-violet" x="518" y="86">group.id = faturamento</text>
+      <rect class="box" x="524" y="96" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="130">consumer-1</text>
+      <text class="t-sm t-amber" x="832" y="130" text-anchor="end">P0 &nbsp;P1</text>
+      <rect class="box" x="524" y="162" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="196">consumer-2</text>
+      <text class="t-sm t-amber" x="832" y="196" text-anchor="end">P2</text>
+
+      <rect class="box box-violet" x="500" y="252" width="380" height="110" rx="14"/>
+      <text class="t-lbl t-violet" x="518" y="278">group.id = analytics</text>
+      <rect class="box" x="524" y="288" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="322">consumer-3</text>
+      <text class="t-sm t-amber" x="832" y="322" text-anchor="end">P0 &nbsp;P1 &nbsp;P2</text>
+
+      <text class="t-xs" x="40" y="396">__consumer_offsets guarda um offset por par (group.id, partição) — por isso os dois grupos avançam independentes</text>
+    </svg>
+
+    <!-- ============================================ 6. rebalance -->
+    <svg class="scene" data-title="Rebalance: a partição é a unidade de paralelismo" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Quatro consumers em um grupo para três partições: três recebem uma partição cada e o quarto fica ocioso.">
+      <rect class="box box-coral" x="40" y="18" width="180" height="32" rx="16"/>
+      <text class="t-tag t-coral blink" x="130" y="39" text-anchor="middle">REBALANCE</text>
+
+      <rect class="box box-amber" x="40" y="70" width="380" height="290" rx="14"/>
+      <text class="t-lbl t-amber" x="58" y="96">topic: pedidos</text>
+
+      <rect class="lane" x="64" y="112" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="145">P0</text>
+      <g class="rec"><rect x="116" y="124" width="40" height="32" rx="5"/><text x="136" y="145" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="124" width="40" height="32" rx="5"/><text x="182" y="145" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="124" width="40" height="32" rx="5"/><text x="228" y="145" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="124" width="40" height="32" rx="5"/><text x="274" y="145" text-anchor="middle">3</text></g>
+
+      <rect class="lane" x="64" y="192" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="225">P1</text>
+      <g class="rec"><rect x="116" y="204" width="40" height="32" rx="5"/><text x="136" y="225" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="204" width="40" height="32" rx="5"/><text x="182" y="225" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="204" width="40" height="32" rx="5"/><text x="228" y="225" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="204" width="40" height="32" rx="5"/><text x="274" y="225" text-anchor="middle">3</text></g>
+
+      <rect class="lane" x="64" y="272" width="332" height="56" rx="10"/>
+      <text class="t-sm t-amber" x="80" y="305">P2</text>
+      <g class="rec"><rect x="116" y="284" width="40" height="32" rx="5"/><text x="136" y="305" text-anchor="middle">0</text></g>
+      <g class="rec"><rect x="162" y="284" width="40" height="32" rx="5"/><text x="182" y="305" text-anchor="middle">1</text></g>
+      <g class="rec"><rect x="208" y="284" width="40" height="32" rx="5"/><text x="228" y="305" text-anchor="middle">2</text></g>
+      <g class="rec"><rect x="254" y="284" width="40" height="32" rx="5"/><text x="274" y="305" text-anchor="middle">3</text></g>
+
+      <path class="wire-violet flow" d="M396 140 L518 116" marker-end="url(#a-violet)"/>
+      <path class="wire-violet flow" d="M396 220 L518 180" marker-end="url(#a-violet)"/>
+      <path class="wire-violet flow" d="M396 300 L518 244" marker-end="url(#a-violet)"/>
+
+      <rect class="box box-violet" x="500" y="52" width="380" height="310" rx="14"/>
+      <text class="t-lbl t-violet" x="518" y="78">group.id = faturamento</text>
+      <rect class="box" x="524" y="88" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="122">consumer-1</text>
+      <text class="t-sm t-amber" x="832" y="122" text-anchor="end">P0</text>
+      <rect class="box" x="524" y="152" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="186">consumer-2</text>
+      <text class="t-sm t-amber" x="832" y="186" text-anchor="end">P1</text>
+      <rect class="box" x="524" y="216" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="250">consumer-3</text>
+      <text class="t-sm t-amber" x="832" y="250" text-anchor="end">P2</text>
+      <rect class="box-ghost" x="524" y="280" width="332" height="56" rx="10"/>
+      <text class="t-sm" x="548" y="314" fill="#626d7d">consumer-4</text>
+      <text class="t-xs t-coral" x="832" y="314" text-anchor="end">OCIOSO</text>
+
+      <text class="t-xs" x="40" y="396">escalar acima do número de partições não aumenta a vazão — o quarto consumer fica parado esperando um rebalance</text>
+    </svg>
+
+    <!-- ============================================ 7. cluster e controle -->
+    <svg class="scene" data-title="Cluster: réplicas, ISR e o plano de controle" viewBox="0 0 920 420" preserveAspectRatio="xMidYMid meet" role="img" hidden
+         aria-label="Três brokers, cada um líder de uma partição e réplica das outras duas, coordenados pelo KRaft, que substituiu o ZooKeeper.">
+      <rect class="box-ghost" x="40" y="70" width="270" height="132" rx="12"/>
+      <text class="t-lbl" x="58" y="98" fill="#626d7d">ZooKeeper</text>
+      <text class="t-xs" x="58" y="122">eleição do controller</text>
+      <text class="t-xs" x="58" y="142">registro dos brokers</text>
+      <text class="t-xs" x="58" y="162">metadados e ACLs</text>
+      <text class="t-xs t-coral" x="58" y="188">removido no Kafka 4.0</text>
+
+      <rect class="box box-blue" x="40" y="222" width="270" height="140" rx="12"/>
+      <text class="t-lbl t-blue" x="58" y="250">KRaft &middot; 3.3+</text>
+      <text class="t-xs" x="58" y="274">quorum de controllers</text>
+      <text class="t-xs" x="58" y="294">metadados no próprio log</text>
+      <text class="t-xs" x="58" y="314">sem dependência externa</text>
+      <text class="t-xs t-blue" x="58" y="340">process.roles=broker,controller</text>
+
+      <path class="wire-dim" d="M310 136 L344 176"/>
+      <path class="wire-blue flow" d="M310 292 L344 250" marker-end="url(#a-blue)"/>
+
+      <rect class="box box-amber" x="352" y="110" width="162" height="230" rx="12"/>
+      <text class="t-lbl t-amber" x="368" y="140">broker 1</text>
+      <rect class="chip-l" x="366" y="158" width="134" height="42" rx="8"/>
+      <text class="t-sm t-teal" x="382" y="184">P0 &middot; líder</text>
+      <rect class="chip-f" x="366" y="210" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="382" y="236">P1 &middot; réplica</text>
+      <rect class="chip-f" x="366" y="262" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="382" y="288">P2 &middot; réplica</text>
+
+      <rect class="box box-amber" x="534" y="110" width="162" height="230" rx="12"/>
+      <text class="t-lbl t-amber" x="550" y="140">broker 2</text>
+      <rect class="chip-f" x="548" y="158" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="564" y="184">P0 &middot; réplica</text>
+      <rect class="chip-l" x="548" y="210" width="134" height="42" rx="8"/>
+      <text class="t-sm t-teal" x="564" y="236">P1 &middot; líder</text>
+      <rect class="chip-f" x="548" y="262" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="564" y="288">P2 &middot; réplica</text>
+
+      <rect class="box box-amber" x="716" y="110" width="162" height="230" rx="12"/>
+      <text class="t-lbl t-amber" x="732" y="140">broker 3</text>
+      <rect class="chip-f" x="730" y="158" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="746" y="184">P0 &middot; réplica</text>
+      <rect class="chip-f" x="730" y="210" width="134" height="42" rx="8"/>
+      <text class="t-xs" x="746" y="236">P1 &middot; réplica</text>
+      <rect class="chip-l" x="730" y="262" width="134" height="42" rx="8"/>
+      <text class="t-sm t-teal" x="746" y="288">P2 &middot; líder</text>
+
+      <text class="t-xs t-blue" x="352" y="368">metadados &middot; eleição de líder &middot; membership do cluster</text>
+      <text class="t-xs" x="352" y="392">replication.factor=3 &middot; min.insync.replicas=2 &middot; ISR = réplicas em dia com o líder</text>
+      <text class="t-xs" x="40" y="392">se o broker 1 cair,</text>
+      <text class="t-xs" x="40" y="412">P0 elege um novo líder</text>
+    </svg>
+
+  </div>
+
+  <div class="progress"><span></span></div>
+
+  <div class="caps" id="caps">
+    <p class="cap">Um <b>tópico</b> não é uma fila que esvazia: é um <b>log de append-only</b>. Cada registro escrito ganha um <b>offset</b> — um inteiro sequencial que nunca muda e identifica aquela posição para sempre. Ler não consome nada; o registro continua lá para o próximo consumidor. O que apaga dados é só a <b>retenção</b> (<code>retention.ms</code>, <code>retention.bytes</code>), que descarta os segmentos mais antigos do início do log.</p>
+    <p class="cap" hidden>Um único log não escala: ele vive inteiro em um broker. Por isso o tópico é fatiado em <b>partições</b>, e cada partição é um log independente, com sua própria contagem de offsets. O destino de um registro sai da <b>chave</b>: <code>murmur2(key) % nº de partições</code>. Mesma chave, mesma partição, sempre — é isso que garante que todos os eventos do cliente <code>cli-42</code> cheguem na ordem em que aconteceram.</p>
+    <p class="cap" hidden>O <b>producer</b> não envia um registro por vez. Ele acumula por até <code>linger.ms</code> ou até fechar <code>batch.size</code>, comprime o lote e manda direto para o broker que é <b>líder</b> daquela partição. O <code>acks</code> define quando ele considera a escrita feita: <code>0</code> não espera nada, <code>1</code> espera só o líder, <code>all</code> espera as réplicas em sincronia — mais durável, mais lento.</p>
+    <p class="cap" hidden>O consumer guarda uma posição de leitura por partição. O <b>committed offset</b> é o ponto salvo: se o processo morrer, é dali que o substituto retoma. A distância entre ele e o <b>log end offset</b> é o <b>lag</b> — a métrica que diz se o consumo está acompanhando a produção. Como o log não é destruído na leitura, mover o offset para trás reprocessa o histórico: é o <em>replay</em>, a propriedade que torna Kafka viável para event sourcing.</p>
+    <p class="cap" hidden>Um <b>consumer group</b> é um time que divide o trabalho: dentro do grupo, cada partição é entregue a <b>exatamente um</b> consumer — nunca a dois, o que evita processamento duplicado. Já grupos <b>diferentes</b> são leitores independentes do mesmo tópico, cada um com seu próprio offset. É assim que faturamento e analytics leem os mesmos pedidos sem um atrapalhar o outro, e sem o producer saber que existem.</p>
+    <p class="cap" hidden>Quando um consumer entra, sai ou trava, o grupo faz um <b>rebalance</b>: o coordenador redistribui as partições entre quem sobrou. Isso dá tolerância a falha de graça — mas impõe um teto. Com 3 partições, o quarto consumer fica <b>ocioso</b>, porque a partição é a unidade de paralelismo. Escalar o consumo depende de ter partições suficientes, decisão que se toma na criação do tópico.</p>
+    <p class="cap" hidden>Cada partição é replicada em <code>replication.factor</code> brokers: um <b>líder</b>, que atende leitura e escrita, e <b>seguidores</b>, que copiam o log. As réplicas em dia formam o <b>ISR</b>; com <code>acks=all</code> e <code>min.insync.replicas=2</code>, uma escrita só é confirmada depois de chegar a elas. Alguém precisa decidir quem é líder e quem está vivo: esse plano de controle era o <b>ZooKeeper</b>, um serviço externo. Desde a 3.3 o <b>KRaft</b> guarda os metadados no próprio log do Kafka, e a 4.0 removeu o ZooKeeper de vez.</p>
+  </div>
+
+  <div class="controls">
+    <button id="prev" type="button">&#9664; Anterior</button>
+    <button id="play" type="button" aria-live="polite">&#10073;&#10073; Pausar</button>
+    <button id="next" type="button">Próxima &#9654;</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Cenas"></div>
+  </div>
+
+  <p class="hint" style="padding: 0 20px 18px;">setas &larr; &rarr; navegam &middot; espaço pausa</p>
+
+</section>
+
+<section class="prose">
+  <h2>Glossário</h2>
+  <p class="sub">Os termos que aparecem em qualquer configuração de Kafka.</p>
+  <div class="grid">
+    <dl class="term"><dt>Broker</dt><dd>Um servidor Kafka. Guarda partições em disco, atende producers e consumers. Vários brokers formam um <em>cluster</em>.</dd></dl>
+    <dl class="term"><dt>Topic</dt><dd>Nome lógico de um fluxo de eventos. Não guarda nada sozinho — é o conjunto das suas partições.</dd></dl>
+    <dl class="term"><dt>Partition</dt><dd>Um log ordenado e append-only. Unidade de paralelismo, de replicação e de ordenação.</dd></dl>
+    <dl class="term"><dt>Offset</dt><dd>Posição de um registro dentro de uma partição. Sequencial, imutável, só faz sentido junto com a partição.</dd></dl>
+    <dl class="term"><dt>Producer</dt><dd>Quem escreve. Escolhe a partição pela chave, agrupa em lotes e espera o <code>acks</code> configurado.</dd></dl>
+    <dl class="term"><dt>Consumer</dt><dd>Quem lê, via <code>poll()</code>. Controla a própria posição — o broker não empurra nem rastreia entrega.</dd></dl>
+    <dl class="term"><dt>Consumer group</dt><dd>Consumers com o mesmo <code>group.id</code>. Dividem as partições entre si e compartilham um conjunto de offsets.</dd></dl>
+    <dl class="term"><dt>Lag</dt><dd><code>log end offset − committed offset</code>. Quanto o consumo está atrás da produção. A métrica que se monitora.</dd></dl>
+    <dl class="term"><dt>Rebalance</dt><dd>Redistribuição das partições quando a composição do grupo muda. Pausa o consumo durante a troca.</dd></dl>
+    <dl class="term"><dt>Leader / follower</dt><dd>Réplicas da mesma partição. O líder atende o tráfego; os seguidores copiam para poder assumir.</dd></dl>
+    <dl class="term"><dt>ISR</dt><dd><em>In-Sync Replicas</em>: as réplicas em dia com o líder. Só elas são candidatas a virar líder sem perda.</dd></dl>
+    <dl class="term"><dt>ZooKeeper / KRaft</dt><dd>O plano de controle. ZooKeeper era externo; KRaft é interno, padrão desde a 3.3 e obrigatório na 4.0.</dd></dl>
+  </div>
+</section>
+
+<section class="prose">
+  <h2>Garantias — e o que não é garantido</h2>
+  <p class="sub">A maioria dos enganos com Kafka mora nesta lista.</p>
+  <ul class="rules">
+    <li><span class="ok">✓</span><span><b>Ordem dentro de uma partição.</b> Os registros são lidos exatamente na ordem em que foram gravados.</span></li>
+    <li><span class="no">✕</span><span><b>Ordem entre partições.</b> Não existe. Se a ordem importa entre dois eventos, eles precisam compartilhar a chave.</span></li>
+    <li><span class="ok">✓</span><span><b>Durabilidade.</b> Com <code>acks=all</code>, <code>replication.factor=3</code> e <code>min.insync.replicas=2</code>, a perda exige duas falhas simultâneas.</span></li>
+    <li><span class="no">✕</span><span><b>Entrega exatamente uma vez por padrão.</b> O padrão é <em>at least once</em>: uma falha entre processar e commitar reentrega o registro. <em>Exactly once</em> exige producer idempotente e transações.</span></li>
+    <li><span class="ok">✓</span><span><b>Releitura do histórico.</b> Ler não consome. Enquanto a retenção permitir, dá para voltar o offset e reprocessar tudo.</span></li>
+    <li><span class="no">✕</span><span><b>Paralelismo acima do nº de partições.</b> Consumers sobrando no grupo ficam ociosos.</span></li>
+    <li><span class="no">✕</span><span><b>Kafka como banco de dados.</b> Não há consulta por chave nem índice secundário — só leitura sequencial a partir de um offset (o <em>log compaction</em> é a exceção parcial).</span></li>
+  </ul>
+</section>
+
+<section class="prose">
+  <h2>Ver acontecendo</h2>
+  <p class="sub">Os comandos que mostram, no terminal, cada conceito das cenas acima.</p>
+<pre><span class="c"># criar um tópico com 3 partições e fator de replicação 3</span>
+<span class="p">$</span> kafka-topics.sh --bootstrap-server localhost:9092 \
+      --create --topic pedidos --partitions 3 --replication-factor 3
+
+<span class="c"># ver líder, réplicas e ISR de cada partição  (cena 7)</span>
+<span class="p">$</span> kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic pedidos
+
+<span class="c"># produzir com chave — a chave decide a partição  (cena 2)</span>
+<span class="p">$</span> kafka-console-producer.sh --bootstrap-server localhost:9092 \
+      --topic pedidos --property parse.key=true --property key.separator=:
+
+<span class="c"># ler desde o offset 0, mostrando partição e offset  (cenas 1 e 4)</span>
+<span class="p">$</span> kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+      --topic pedidos --from-beginning --property print.partition=true \
+      --property print.offset=true
+
+<span class="c"># atribuição de partições, offset commitado e LAG por consumer  (cenas 4, 5, 6)</span>
+<span class="p">$</span> kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+      --describe --group faturamento
+
+<span class="c"># rebobinar o grupo para reprocessar tudo — replay  (cena 4)</span>
+<span class="p">$</span> kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+      --group faturamento --topic pedidos --reset-offsets --to-earliest --execute</pre>
+</section>
+
+<footer>
+  <p>Complementa as seções <a href="faq.html#o-que-e-kafka">O que é o Kafka?</a> e <a href="faq.html#como-kafka-funciona">Como ele funciona</a> do FAQ, e a seção <a href="faq.html#event-sourcing">Event Sourcing</a>, que depende do <em>replay</em> mostrado na cena 4.</p>
+</footer>
+
+</div>
+
+<script src="../js/kafka.js"></script>
+</body>
+</html>

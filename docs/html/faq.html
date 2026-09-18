@@ -232,6 +232,7 @@ dependencies {
 <p>Diferente de uma fila tradicional (onde a mensagem some após ser consumida), o Kafka <strong>retém</strong> as mensagens por um período configurável (ou indefinidamente), permitindo que vários consumidores independentes leiam o mesmo dado, cada um no seu próprio ritmo — o que combina muito bem com Event Sourcing: os eventos gravados no event store podem ser publicados no Kafka para alimentar outros serviços/projeções.</p>
 <p>Casos de uso típicos: comunicação assíncrona entre microsserviços, pipelines de dados em tempo real, agregação de logs, e como backbone de arquiteturas orientadas a eventos.</p>
 <h2 id="como-kafka-funciona">Como ele funciona? (Kafka em detalhes)</h2>
+<p>&#9654; Versão animada, cena a cena: <a href="kafka.html"><strong>Kafka em Movimento</strong></a> — tópicos, partições, offsets, consumer groups, rebalance e o plano de controle (ZooKeeper / KRaft).</p>
 <p><img src="../img/diag07-kafka-cluster-detalhado.png" alt="Diagrama: produtor publica no broker líder, que replica para brokers seguidores; consumer groups A e B leem de forma independente"></p>
 <h4>Broker</h4>
 <p>Um <strong>broker</strong> é um servidor Kafka responsável por armazenar dados e atender requisições de produtores e consumidores. Um <strong>cluster</strong> é formado por vários brokers trabalhando juntos, o que dá escalabilidade horizontal e tolerância a falhas.</p>
