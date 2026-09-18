@@ -1,0 +1,5 @@
+dependencies {
+    // Swagger/OpenAPI: exposto automaticamente em /swagger-ui.html e /v3/api-docs
+    // nos módulos que dependem de :core (api, async) via classpath em tempo de execução
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
+}
