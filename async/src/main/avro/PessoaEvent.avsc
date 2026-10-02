@@ -1,0 +1,10 @@
+{
+    "type": "record",
+    "name": "PessoaEvent",
+    "namespace": "com.example.avro",
+    "doc": "Evento publicado no Kafka quando uma pessoa é cadastrada",
+    "fields": [
+        { "name": "nome", "type": "string" },
+        { "name": "idade", "type": "int" }
+    ]
+}
